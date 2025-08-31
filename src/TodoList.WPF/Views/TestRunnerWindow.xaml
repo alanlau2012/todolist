@@ -1,0 +1,221 @@
+<Window x:Class="TodoList.WPF.Views.TestRunnerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:TodoList.WPF.Models"
+        Title="测试运行器 - TodoList" 
+        Height="600" 
+        Width="900"
+        WindowStartupLocation="CenterScreen">
+    
+    <Window.Resources>
+        <!-- 测试状态转换器 -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        
+        <!-- 测试结果样式 -->
+        <Style x:Key="TestResultStyle" TargetType="TreeViewItem">
+            <Setter Property="IsExpanded" Value="True" />
+            <Setter Property="FontFamily" Value="Consolas, 'Microsoft YaHei UI'" />
+        </Style>
+        
+        <!-- 状态图标样式 -->
+        <Style x:Key="StatusIconStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="200" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 工具栏 -->
+        <ToolBar Grid.Row="0" Background="#F5F5F5">
+            <Button Name="RunAllButton" 
+                    Content="▶️ 运行所有测试" 
+                    Click="RunAllButton_Click"
+                    IsEnabled="{Binding CanRunTests}"
+                    Padding="10,5"
+                    Margin="5,2" />
+            
+            <Button Name="RunSelectedButton" 
+                    Content="▶️ 运行选中测试" 
+                    Click="RunSelectedButton_Click"
+                    IsEnabled="{Binding CanRunSelectedTests}"
+                    Padding="10,5"
+                    Margin="5,2" />
+            
+            <Separator />
+            
+            <Button Name="StopButton" 
+                    Content="⏹️ 停止测试" 
+                    Click="StopButton_Click"
+                    IsEnabled="{Binding IsRunning}"
+                    Padding="10,5"
+                    Margin="5,2" />
+            
+            <Separator />
+            
+            <Button Name="ClearButton" 
+                    Content="🗑️ 清除结果" 
+                    Click="ClearButton_Click"
+                    IsEnabled="{Binding CanClearResults}"
+                    Padding="10,5"
+                    Margin="5,2" />
+            
+            <Separator />
+            
+            <TextBlock Text="筛选:" VerticalAlignment="Center" Margin="10,0,5,0" />
+            <ComboBox Name="FilterComboBox" 
+                      Width="120"
+                      SelectedIndex="0"
+                      SelectionChanged="FilterComboBox_SelectionChanged">
+                <ComboBoxItem Content="全部" />
+                <ComboBoxItem Content="通过" />
+                <ComboBoxItem Content="失败" />
+                <ComboBoxItem Content="跳过" />
+            </ComboBox>
+        </ToolBar>
+
+        <!-- 测试结果树 -->
+        <TreeView Grid.Row="1" 
+                  Name="TestResultsTreeView"
+                  ItemsSource="{Binding TestClasses}"
+                  SelectedItemChanged="TestResultsTreeView_SelectedItemChanged"
+                  Background="White"
+                  BorderBrush="#E0E0E0"
+                  BorderThickness="1"
+                  Margin="5">
+            
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem" BasedOn="{StaticResource TestResultStyle}">
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                </Style>
+            </TreeView.ItemContainerStyle>
+            
+            <!-- 测试类模板 -->
+            <TreeView.Resources>
+                <HierarchicalDataTemplate DataType="{x:Type models:TestClassResult}" 
+                                          ItemsSource="{Binding Tests}">
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <TextBlock Text="{Binding StatusIcon}" 
+                                   Style="{StaticResource StatusIconStyle}" />
+                        <TextBlock Text="{Binding DisplayName}" 
+                                   FontWeight="Bold" 
+                                   FontSize="14"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding PassedCount, StringFormat='({0} 通过'}" 
+                                   Foreground="Green" 
+                                   Margin="10,0,0,0"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding FailedCount, StringFormat=', {0} 失败'}" 
+                                   Foreground="Red" 
+                                   VerticalAlignment="Center"
+                                   Visibility="{Binding FailedCount, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <TextBlock Text="{Binding SkippedCount, StringFormat=', {0} 跳过'}" 
+                                   Foreground="Orange" 
+                                   VerticalAlignment="Center"
+                                   Visibility="{Binding SkippedCount, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <TextBlock Text=")" 
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+                
+                <!-- 测试方法模板 -->
+                <DataTemplate DataType="{x:Type models:TestResult}">
+                    <StackPanel Orientation="Horizontal" Margin="0,1">
+                        <TextBlock Text="{Binding StatusIcon}" 
+                                   Style="{StaticResource StatusIconStyle}" />
+                        <TextBlock Text="{Binding DisplayName}" 
+                                   VerticalAlignment="Center"
+                                   FontSize="12" />
+                        <TextBlock Text="{Binding DurationText}" 
+                                   Foreground="Gray" 
+                                   Margin="10,0,0,0"
+                                   VerticalAlignment="Center"
+                                   FontSize="10" />
+                    </StackPanel>
+                </DataTemplate>
+            </TreeView.Resources>
+        </TreeView>
+
+        <!-- 分隔条 -->
+        <GridSplitter Grid.Row="2" 
+                      Height="5" 
+                      HorizontalAlignment="Stretch" 
+                      VerticalAlignment="Center"
+                      Background="#E0E0E0" />
+
+        <!-- 详细信息面板 -->
+        <Grid Grid.Row="3" Background="#F9F9F9" Margin="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            
+            <TextBlock Grid.Row="0" 
+                       Text="测试详细信息" 
+                       FontWeight="Bold" 
+                       FontSize="14"
+                       Margin="10,10,10,5" />
+            
+            <ScrollViewer Grid.Row="1" 
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Auto"
+                          Margin="10,0,10,10">
+                <Border Background="White"
+                        BorderBrush="#E0E0E0"
+                        BorderThickness="1"
+                        Padding="10">
+                    <TextBlock Name="TestDetailsTextBlock"
+                               Text="{Binding SelectedTestDetails}"
+                               FontFamily="Consolas"
+                               FontSize="11"
+                               TextWrapping="Wrap" />
+                </Border>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- 状态栏 -->
+        <StatusBar Grid.Row="4" Background="#F0F0F0">
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="进度: " />
+                    <ProgressBar Name="TestProgressBar"
+                                 Width="200" 
+                                 Height="16"
+                                 Value="{Binding Progress}"
+                                 Maximum="100"
+                                 Margin="5,0" />
+                    <TextBlock Text="{Binding ProgressText}" Margin="5,0" />
+                </StackPanel>
+            </StatusBarItem>
+            
+            <Separator />
+            
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="总计: " />
+                    <TextBlock Text="{Binding TotalTests}" FontWeight="Bold" />
+                    <TextBlock Text=" | 通过: " Margin="10,0,0,0" />
+                    <TextBlock Text="{Binding PassedTests}" Foreground="Green" FontWeight="Bold" />
+                    <TextBlock Text=" | 失败: " Margin="10,0,0,0" />
+                    <TextBlock Text="{Binding FailedTests}" Foreground="Red" FontWeight="Bold" />
+                    <TextBlock Text=" | 跳过: " Margin="10,0,0,0" />
+                    <TextBlock Text="{Binding SkippedTests}" Foreground="Orange" FontWeight="Bold" />
+                </StackPanel>
+            </StatusBarItem>
+            
+            <Separator />
+            
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

@@ -1,0 +1,102 @@
+﻿{
+  "StartTime": "2025-08-31T11:33:14.775972+08:00",
+  "EndTime": "2025-08-31T11:33:27.9739892+08:00",
+  "TotalDuration": "00:00:13.1980172",
+  "TestClasses": [
+    {
+      "ClassName": "BasicFunctionalityTests",
+      "DisplayName": "基本功能测试",
+      "Tests": [
+        {
+          "TestName": "BasicFunctionalityTests",
+          "DisplayName": "BasicFunctionalityTests",
+          "Status": 2,
+          "ErrorMessage": "",
+          "Duration": "00:00:03.1606267",
+          "StartTime": "2025-08-31T11:33:17.6944723+08:00",
+          "EndTime": "2025-08-31T11:33:20.855099+08:00"
+        }
+      ],
+      "PassedCount": 1,
+      "FailedCount": 0,
+      "SkippedCount": 0,
+      "TotalCount": 1,
+      "AllPassed": true
+    },
+    {
+      "ClassName": "DataValidationTests",
+      "DisplayName": "数据验证测试",
+      "Tests": [
+        {
+          "TestName": "DataValidationTests",
+          "DisplayName": "DataValidationTests",
+          "Status": 2,
+          "ErrorMessage": "",
+          "Duration": "00:00:01.6433564",
+          "StartTime": "2025-08-31T11:33:20.8670271+08:00",
+          "EndTime": "2025-08-31T11:33:22.5103835+08:00"
+        }
+      ],
+      "PassedCount": 1,
+      "FailedCount": 0,
+      "SkippedCount": 0,
+      "TotalCount": 1,
+      "AllPassed": true
+    },
+    {
+      "ClassName": "UserInterfaceTests",
+      "DisplayName": "用户界面测试",
+      "Tests": [
+        {
+          "TestName": "UserInterfaceTests",
+          "DisplayName": "UserInterfaceTests",
+          "Status": 2,
+          "ErrorMessage": "",
+          "Duration": "00:00:02.4159656",
+          "StartTime": "2025-08-31T11:33:22.510806+08:00",
+          "EndTime": "2025-08-31T11:33:24.9267716+08:00"
+        }
+      ],
+      "PassedCount": 1,
+      "FailedCount": 0,
+      "SkippedCount": 0,
+      "TotalCount": 1,
+      "AllPassed": true
+    },
+    {
+      "ClassName": "IntegrationTests",
+      "DisplayName": "集成测试",
+      "Tests": [
+        {
+          "TestName": "IntegrationTests",
+          "DisplayName": "IntegrationTests",
+          "Status": 2,
+          "ErrorMessage": "",
+          "Duration": "00:00:03.0461447",
+          "StartTime": "2025-08-31T11:33:24.9273981+08:00",
+          "EndTime": "2025-08-31T11:33:27.9735428+08:00"
+        }
+      ],
+      "PassedCount": 1,
+      "FailedCount": 0,
+      "SkippedCount": 0,
+      "TotalCount": 1,
+      "AllPassed": true
+    }
+  ],
+  "TotalTestCount": 4,
+  "PassedCount": 4,
+  "FailedCount": 0,
+  "SkippedCount": 0,
+  "AllTestsPassed": true,
+  "SuccessRate": 100.0,
+  "Environment": {
+    "OSVersion": "Microsoft Windows NT 10.0.22621.0",
+    "DotNetVersion": "9.0.8",
+    "MachineName": "BF-202405092138",
+    "UserName": "Administrator",
+    "ProcessorCount": 36,
+    "WorkingDirectory": "E:\\Cursor\\TodoList",
+    "TestRunnerVersion": "1.0.0"
+  }
+}
