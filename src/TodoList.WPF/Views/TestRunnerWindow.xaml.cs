@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Threading.Tasks;
 using TodoList.WPF.Models;
 using TodoList.WPF.ViewModels;
 
@@ -18,8 +19,8 @@ public partial class TestRunnerWindow : Window
         _viewModel = new TestRunnerViewModel();
         DataContext = _viewModel;
         
-        // 初始化测试数据
-        _viewModel.InitializeTests();
+        // 异步初始化测试数据
+        Loaded += async (sender, e) => await _viewModel.InitializeTestsAsync();
     }
 
     private async void RunAllButton_Click(object sender, RoutedEventArgs e)

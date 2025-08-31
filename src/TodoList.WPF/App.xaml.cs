@@ -42,6 +42,31 @@ public partial class App : Application
             var mainWindow = new MainWindow(mainViewModel);
             mainWindow.Show();
 
+            // 在启动时自动执行测试发现，显示测试数量
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var testExecutor = new TodoList.WPF.Services.TestExecutorService();
+                    var discoveredTests = await testExecutor.DiscoverTestsAsync();
+                    
+                    // 在UI线程显示结果
+                    Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show($"应用启动成功！\n\n发现 {discoveredTests.Count} 个测试用例", 
+                            "TodoList 应用", MessageBoxButton.OK, MessageBoxImage.Information);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show($"测试发现失败: {ex.Message}", "警告", 
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                    });
+                }
+            });
+
             base.OnStartup(e);
         }
         catch (Exception ex)
