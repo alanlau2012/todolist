@@ -86,10 +86,7 @@ public class MainViewModelTests
         viewModel.NewTaskTitle = "新任务";
 
         // Act
-        viewModel.AddTodoItem();
-        
-        // 等待异步操作完成
-        await Task.Delay(100);
+        await viewModel.AddTodoItem();
 
         // Assert
         viewModel.TodoItems.Should().Contain(newItem);
@@ -110,10 +107,7 @@ public class MainViewModelTests
         viewModel.NewTaskTitle = "测试任务";
 
         // Act
-        viewModel.AddTodoItem();
-        
-        // 等待异步操作完成
-        await Task.Delay(100);
+        await viewModel.AddTodoItem();
 
         // Assert
         viewModel.StatusMessage.Should().Contain("输入错误");
@@ -138,10 +132,7 @@ public class MainViewModelTests
         await Task.Delay(100);
 
         // Act
-        viewModel.ToggleComplete(todoItem);
-        
-        // 等待异步操作完成
-        await Task.Delay(100);
+        await viewModel.ToggleComplete(todoItem);
 
         // Assert
         todoItem.IsCompleted.Should().BeTrue();
@@ -168,10 +159,7 @@ public class MainViewModelTests
         await Task.Delay(100);
 
         // Act
-        viewModel.DeleteTodoItem(todoItem);
-        
-        // 等待异步操作完成
-        await Task.Delay(100);
+        await viewModel.DeleteTodoItem(todoItem);
 
         // Assert
         viewModel.TodoItems.Should().NotContain(todoItem);

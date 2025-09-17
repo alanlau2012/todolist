@@ -124,13 +124,17 @@ public class TestExecutorService
             var outputLines = new List<string>();
             var completed = 0;
             var total = tests.Count;
+            var completedLock = new object();
             
             process.OutputDataReceived += (sender, e) =>
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    outputLines.Add(e.Data);
-                    ProcessTestOutput(e.Data, tests, ref completed, total);
+                    lock (outputLines)
+                    {
+                        outputLines.Add(e.Data);
+                    }
+                    ProcessTestOutput(e.Data, tests, completedLock, ref completed, total);
                 }
             };
 
@@ -220,7 +224,7 @@ public class TestExecutorService
     /// <summary>
     /// 处理测试输出
     /// </summary>
-    private void ProcessTestOutput(string line, List<TestResult> tests, ref int completed, int total)
+    private void ProcessTestOutput(string line, List<TestResult> tests, object completedLock, ref int completed, int total)
     {
         // 查找测试开始、通过、失败的模式
         if (line.Contains("[PASS]"))
@@ -230,8 +234,11 @@ public class TestExecutorService
             {
                 test.Status = TestStatus.Passed;
                 TestCompleted?.Invoke(this, test);
-                completed++;
-                ProgressChanged?.Invoke(this, (completed, total));
+                lock (completedLock)
+                {
+                    completed++;
+                    ProgressChanged?.Invoke(this, (completed, total));
+                }
             }
         }
         else if (line.Contains("[FAIL]"))
@@ -241,8 +248,11 @@ public class TestExecutorService
             {
                 test.Status = TestStatus.Failed;
                 TestFailed?.Invoke(this, (test, "测试失败"));
-                completed++;
-                ProgressChanged?.Invoke(this, (completed, total));
+                lock (completedLock)
+                {
+                    completed++;
+                    ProgressChanged?.Invoke(this, (completed, total));
+                }
                 // 标记测试失败
             }
             else
@@ -271,33 +281,9 @@ public class TestExecutorService
     /// </summary>
     private TestResult? FindTestByLine(string line, List<TestResult> tests)
     {
-        // 从混乱的输出中提取测试方法名
-        // 格式可能是: MethodName [FAIL] 或 TodoList.Tests.Class.Method [FAIL]
-        
-        // 首先尝试精确匹配已知的失败测试
-        if (line.Contains("[FAIL]"))
-        {
-            if (line.Contains("AddTodoItem_ValidTitle_ShouldAddItemAndClearTitle"))
-            {
-                var test = tests.FirstOrDefault(t => t.TestName == "AddTodoItem_ValidTitle_ShouldAddItemAndClearTitle");
-                if (test != null)
-                {
-                    // 精确匹配到失败测试
-                    return test;
-                }
-            }
-            
-            if (line.Contains("AddTodoItemSync_ValidTitle_ShouldAddItemAndClearTitle"))
-            {
-                var test = tests.FirstOrDefault(t => t.TestName == "AddTodoItemSync_ValidTitle_ShouldAddItemAndClearTitle");
-                if (test != null)
-                {
-                    // 精确匹配到失败测试
-                    return test;
-                }
-            }
-        }
-        
+        if (string.IsNullOrWhiteSpace(line) || tests.Count == 0)
+            return null;
+
         // 尝试匹配 [FAIL] 或 [PASS] 前的测试名
         var statusMatch = System.Text.RegularExpressions.Regex.Match(line, @"(\w+)\s*\[(?:PASS|FAIL)\]");
         if (statusMatch.Success)
@@ -328,6 +314,23 @@ public class TestExecutorService
                 if (fullTestName.EndsWith(expectedFullName) || fullTestName.Contains(test.TestName))
                 {
                     System.Diagnostics.Debug.WriteLine($"通过完整名称匹配找到测试: {fullTestName} -> {test.TestName}");
+                    return test;
+                }
+            }
+        }
+        
+        // 尝试匹配测试类名.方法名格式
+        var classMethodMatch = System.Text.RegularExpressions.Regex.Match(line, @"([\w\.]+)\.(\w+)\s*\[(?:PASS|FAIL)\]");
+        if (classMethodMatch.Success)
+        {
+            var className = classMethodMatch.Groups[1].Value;
+            var methodName = classMethodMatch.Groups[2].Value;
+            
+            foreach (var test in tests)
+            {
+                if (test.TestClassName.Contains(className) && test.TestName.Contains(methodName))
+                {
+                    System.Diagnostics.Debug.WriteLine($"通过类.方法匹配找到测试: {className}.{methodName} -> {test.TestName}");
                     return test;
                 }
             }

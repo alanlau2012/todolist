@@ -70,7 +70,7 @@ public class MainViewModel : INotifyPropertyChanged
     
     public bool IsInputEnabled => !IsAddingTask;
 
-    public async void AddTodoItem()
+    public async Task AddTodoItem()
     {
         if (!CanAddTask) return;
 
@@ -105,7 +105,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    public async void ToggleComplete(TodoItem item)
+    public async Task ToggleComplete(TodoItem item)
     {
         try
         {
@@ -145,7 +145,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    public async void DeleteTodoItem(TodoItem item)
+    public async Task DeleteTodoItem(TodoItem item)
     {
         try
         {
