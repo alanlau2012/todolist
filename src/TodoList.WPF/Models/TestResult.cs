@@ -152,9 +152,10 @@ public class TestResult : INotifyPropertyChanged
 /// <summary>
 /// 测试类结果模型
 /// </summary>
-public class TestClassResult : INotifyPropertyChanged
+public class TestClassResult : INotifyPropertyChanged, IDisposable
 {
     private readonly List<TestResult> _tests = new();
+    private bool _disposed = false;
 
     /// <summary>
     /// 测试类名称
@@ -206,9 +207,39 @@ public class TestClassResult : INotifyPropertyChanged
     /// </summary>
     public void AddTest(TestResult test)
     {
+        if (_disposed) return;
+        
         _tests.Add(test);
-        test.PropertyChanged += (s, e) => OnPropertyChanged(nameof(PassedCount));
+        test.PropertyChanged += OnTestPropertyChanged;
         OnPropertyChanged(nameof(TotalCount));
+    }
+
+    /// <summary>
+    /// 清理资源
+    /// </summary>
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            // 移除所有事件处理器
+            foreach (var test in _tests)
+            {
+                test.PropertyChanged -= OnTestPropertyChanged;
+            }
+            _disposed = true;
+        }
+    }
+
+    private void OnTestPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(TestResult.Status))
+        {
+            OnPropertyChanged(nameof(PassedCount));
+            OnPropertyChanged(nameof(FailedCount));
+            OnPropertyChanged(nameof(SkippedCount));
+            OnPropertyChanged(nameof(AllPassed));
+            OnPropertyChanged(nameof(StatusIcon));
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
